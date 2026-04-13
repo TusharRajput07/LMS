@@ -1,4 +1,7 @@
 const Book = require("../models/Book");
+const IssueRequest = require("../models/IssueRequest");
+const User = require("../models/User");
+const logger = require("../config/logger");
 
 // ---------------------------------------------------------------------------------------------
 // add a book (admin onli)
@@ -28,6 +31,7 @@ const addBook = async (req, res) => {
 
     return res.status(201).json({ message: "Book added successfully", book });
   } catch (error) {
+    logger.error(`Add book error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -55,6 +59,7 @@ const getAllBooks = async (req, res) => {
 
     return res.status(200).json({ total: books.length, books });
   } catch (error) {
+    logger.error(`Get all books error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -74,6 +79,7 @@ const getBookById = async (req, res) => {
 
     return res.status(200).json({ book });
   } catch (error) {
+    logger.error(`Get book by id error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -108,6 +114,7 @@ const updateBook = async (req, res) => {
 
     return res.status(200).json({ message: "Book updated successfully", book });
   } catch (error) {
+    logger.error(`Update book error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -124,10 +131,21 @@ const deleteBook = async (req, res) => {
       return res.status(404).json({ message: "Book not found" });
     }
 
+    const issueRequests = await IssueRequest.find({ book: req.params.id });
+    const issueIds = issueRequests.map((issue) => issue._id);
+
+    await User.updateMany(
+      { issuedBooks: { $in: issueIds } },
+      { $pull: { issuedBooks: { $in: issueIds } } },
+    );
+
+    await IssueRequest.deleteMany({ book: req.params.id });
+
     await book.deleteOne();
 
     return res.status(200).json({ message: "Book deleted successfully" });
   } catch (error) {
+    logger.error(`Delete book error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -141,6 +159,7 @@ const getGenres = async (req, res) => {
     const genres = await Book.distinct("genre");
     return res.status(200).json({ genres });
   } catch (error) {
+    logger.error(`Get genres error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });

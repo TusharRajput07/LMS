@@ -23,7 +23,12 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !originalRequest.url.includes("/auth/signin") &&
+      !originalRequest.url.includes("/auth/signup")
+    ) {
       originalRequest._retry = true; // we retry only one time
 
       try {

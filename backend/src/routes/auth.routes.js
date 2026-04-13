@@ -5,12 +5,14 @@ const {
   signin,
   refreshToken,
   logout,
+  getMe,
 } = require("../controllers/auth.controller");
 const { verifyToken } = require("../middleware/auth");
 
 router.post("/signup", signup);
 router.post("/signin", signin);
 router.post("/refresh", refreshToken);
-router.post("/logout", verifyToken, logout); // contains verifytoken (user must be logged in)
+router.post("/logout", verifyToken, logout);
+router.get("/me", verifyToken, getMe);
 
 module.exports = router;

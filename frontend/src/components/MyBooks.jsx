@@ -55,23 +55,6 @@ const MyBooks = () => {
     }
   };
 
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
-      case "approved":
-        return "bg-green-500/10 text-green-400 border-green-500/20";
-      case "rejected":
-        return "bg-pink-500/10 text-pink-400 border-pink-500/20";
-      case "return_requested":
-        return "bg-purple-500/10 text-purple-400 border-purple-500/20";
-      case "returned":
-        return "bg-gray-500/10 text-gray-400 border-gray-500/20";
-      default:
-        return "";
-    }
-  };
-
   const formatDate = (date) => {
     if (!date) return "—";
     return new Date(date).toLocaleDateString("en-IN", {
@@ -92,13 +75,19 @@ const MyBooks = () => {
         {/* Message */}
         {message.text && (
           <div
-            className={`mb-6 px-4 py-3 rounded-xl text-sm border ${
+            className={`mb-6 px-4 py-3 rounded-xl text-sm border flex items-center justify-between ${
               message.type === "success"
                 ? "bg-green-500/10 border-green-500/30 text-green-400"
-                : "bg-pink-500/10 border-pink-500/30 text-pink-400"
+                : "bg-red-500/10 border-red-500/30 text-red-400"
             }`}
           >
-            {message.text}
+            <span>{message.text}</span>
+            <button
+              onClick={() => setMessage({ type: "", text: "" })}
+              className="ml-4 cursor-pointer opacity-70 hover:opacity-100 transition"
+            >
+              ✕
+            </button>
           </div>
         )}
 
@@ -116,11 +105,13 @@ const MyBooks = () => {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex flex-col gap-1">
                     <h2 className="text-white font-semibold text-lg">
-                      {issue.book.title}
+                      {issue.book?.title || "Deleted Book"}
                     </h2>
-                    <p className="text-gray-400 text-sm">{issue.book.author}</p>
+                    <p className="text-gray-400 text-sm">
+                      {issue.book?.author || "—"}
+                    </p>
                     <p className="text-purple-400 text-xs">
-                      {issue.book.genre}
+                      {issue.book?.genre || "—"}
                     </p>
 
                     <div className="flex flex-col gap-1 mt-2 text-xs text-gray-500">
@@ -141,9 +132,7 @@ const MyBooks = () => {
 
                   <div className="flex flex-col items-end gap-3 shrink-0">
                     {/* Status badge */}
-                    <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStatusStyle(issue.status)}`}
-                    >
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full border bg-white/5 border-white/10 text-gray-400">
                       {issue.status.replace("_", " ").toUpperCase()}
                     </span>
 
@@ -152,7 +141,7 @@ const MyBooks = () => {
                       <button
                         onClick={() => handleCancel(issue._id)}
                         disabled={actioningId === issue._id}
-                        className="text-xs text-pink-400 hover:text-pink-300 border border-pink-500/30 px-3 py-1 rounded-xl transition disabled:opacity-40"
+                        className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 px-3 py-1 rounded-xl transition disabled:opacity-40 cursor-pointer"
                       >
                         {actioningId === issue._id
                           ? "Cancelling..."
@@ -164,7 +153,7 @@ const MyBooks = () => {
                       <button
                         onClick={() => handleReturn(issue._id)}
                         disabled={actioningId === issue._id}
-                        className="text-xs text-purple-400 hover:text-purple-300 border border-purple-500/30 px-3 py-1 rounded-xl transition disabled:opacity-40"
+                        className="text-xs text-purple-400 hover:text-purple-300 border border-purple-500/30 px-3 py-1 rounded-xl transition disabled:opacity-40 cursor-pointer"
                       >
                         {actioningId === issue._id
                           ? "Requesting..."

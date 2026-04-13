@@ -1,6 +1,7 @@
 const IssueRequest = require("../models/IssueRequest");
 const Book = require("../models/Book");
 const User = require("../models/User");
+const logger = require("../config/logger");
 
 // ------------------------------------------------------------------------------------------
 // request to issue a book (user)
@@ -57,6 +58,7 @@ const requestIssue = async (req, res) => {
       issueRequest,
     });
   } catch (error) {
+    logger.error(`Request issue error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -78,6 +80,7 @@ const getMyIssues = async (req, res) => {
 
     return res.status(200).json({ total: issues.length, issues });
   } catch (error) {
+    logger.error(`Get my issues error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -114,6 +117,7 @@ const requestReturn = async (req, res) => {
       issue,
     });
   } catch (error) {
+    logger.error(`Request return error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -136,6 +140,7 @@ const getAllIssues = async (req, res) => {
 
     return res.status(200).json({ total: issues.length, issues });
   } catch (error) {
+    logger.error(`Get all issues error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -166,6 +171,17 @@ const approveRequest = async (req, res) => {
       return res.status(400).json({ message: "Book is out of stock" });
     }
 
+    // user should not already have >= 7 approved books
+    const approvedBooks = await IssueRequest.countDocuments({
+      user: issue.user,
+      status: "approved",
+    });
+    if (approvedBooks >= 7) {
+      return res
+        .status(400)
+        .json({ message: "User already has 7 approved books" });
+    }
+
     // update stock, update issue details, update user's issued books array
     book.availableStock -= 1;
     await book.save();
@@ -181,6 +197,7 @@ const approveRequest = async (req, res) => {
 
     return res.status(200).json({ message: "Issue request approved", issue });
   } catch (error) {
+    logger.error(`Approve request error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -209,6 +226,7 @@ const rejectRequest = async (req, res) => {
 
     return res.status(200).json({ message: "Issue request rejected", issue });
   } catch (error) {
+    logger.error(`Reject request error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -251,6 +269,7 @@ const confirmReturn = async (req, res) => {
       .status(200)
       .json({ message: "Return confirmed successfully", issue });
   } catch (error) {
+    logger.error(`Confirm return error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -285,6 +304,7 @@ const cancelRequest = async (req, res) => {
       .status(200)
       .json({ message: "Issue request cancelled successfully" });
   } catch (error) {
+    logger.error(`Cancel request error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });

@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Book = require("../models/Book");
 const IssueRequest = require("../models/IssueRequest");
+const logger = require("../config/logger");
 
 // -----------------------------------------------------------------------------------------
 // admin dashboard
@@ -32,6 +33,7 @@ const getDashboardStats = async (req, res) => {
       overdueBooks,
     });
   } catch (error) {
+    logger.error(`Dashboard stats error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });

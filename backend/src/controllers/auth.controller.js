@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const logger = require("../config/logger");
 
 // functions just to avoid code repetition
 const generateAccessToken = (id, role) => {
@@ -63,6 +64,7 @@ const signup = async (req, res) => {
       },
     });
   } catch (error) {
+    logger.error(`Signup error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -109,6 +111,7 @@ const signin = async (req, res) => {
       },
     });
   } catch (error) {
+    logger.error(`Signin error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
@@ -139,6 +142,7 @@ const refreshToken = async (req, res) => {
 
     return res.status(200).json({ accessToken });
   } catch (error) {
+    logger.error(`Refresh token error: ${error.message}`);
     return res
       .status(401)
       .json({ message: "Invalid or expired refresh token" });
@@ -166,10 +170,24 @@ const logout = async (req, res) => {
 
     return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
+    logger.error(`Logout error: ${error.message}`);
     return res
       .status(500)
       .json({ message: "Server error", error: error.message });
   }
 };
 
-module.exports = { signup, signin, refreshToken, logout };
+// ---------------------------------------------------------------------------------------------
+// get the logged in user
+const getMe = async (req, res) => {
+  return res.status(200).json({
+    user: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+    },
+  });
+};
+
+module.exports = { signup, signin, refreshToken, logout, getMe };
